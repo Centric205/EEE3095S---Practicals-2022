@@ -142,18 +142,19 @@ int main(void)
 
 	  //TASK 3
 	  //Test your ADCtoCRR function. Display CRR value via UART
-	  crr_value = ADCtoCRR(answer); // Converts an ADC value to a PWM duty cycle
-	  dutyCycle = ((crr_value)/ 47999)*100;
+	  crr_value = ADCtoCRR(answer); // Converts an ADC value to a PWM duty cycle (CRR value that needs to be set for a specific duty cycle)
+
+	  dutyCycle = ((crr_value)* 100)/ 47999;  // CRR(Capture/Compare Register) divided by ARR (Auto Reload Register).)
 	  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, crr_value); // sets the CCR register to ccr_vale
 
 
 	  //TASK 4
 	  //Complete rest of implementation
-	  printf("Duty Cycle: %d", &dutyCycle);
+
 	  sprintf(buffer2, "PWM Duty Cycle: %d \r\n", dutyCycle);
 	  HAL_UART_Transmit (&huart2, buffer2, sizeof(buffer2), 1000);
 
-	  HAL_Delay (500); // wait for 500 ms
+	  HAL_Delay (1000); // wait for 500 ms
 
     /* USER CODE END WHILE */
 
@@ -421,13 +422,22 @@ void EXTI0_1_IRQHandler(void)
 	//TASK 1
 	//Switch delay frequency
 
+	//when button pressed we enter this method, delayTime is initially 500ms
+
 	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
 	currentMillSeconds = HAL_GetTick();
+	/*
+	  this first if statement enables debouncing, which sets a time
+	  for when a button click should be registered as an input
+	  in this case time between clicks should be greater than 200ms
+	  this helps to prevent a single button press to be introduced as many presses
+	 * */
 
 	if((currentMillSeconds - previousMillSeconds) && (B1_Pin == 1))
 	{
+		// each time button is pressed delayTime is updated with these two if statements
 		if(delayTime == 1000){
-			delayTime = 500;
+			delayTime = 500; // each time button is pressed delayTime is updated with these two if statements
 		}
 		else if (delayTime == 500){
 			delayTime = 1000;
